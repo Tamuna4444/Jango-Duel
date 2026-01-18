@@ -1,0 +1,439 @@
+:root {
+  --bg1: #ffcf7a;
+  --bg2: #f39a3d;
+  --bg3: #8b3a2b;
+  --ink: #1b1b1b;
+  --card: rgba(255,255,255,.18);
+  --card2: rgba(0,0,0,.25);
+  --btn: rgba(0,0,0,.55);
+  --btnText: #fff;
+}
+
+* { box-sizing: border-box; }
+html, body { height: 100%; margin: 0; font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial; color: #fff; }
+body {
+  background: linear-gradient(180deg, var(--bg1), var(--bg2) 55%, var(--bg3));
+  overflow: hidden;
+}
+
+.game { height: 100%; display: grid; grid-template-rows: auto 1fr auto; padding: 16px; gap: 12px; }
+
+.hud {
+  display: flex;
+  gap: 12px;
+  justify-content: space-between;
+  background: var(--card2);
+  padding: 10px 12px;
+  border-radius: 14px;
+  backdrop-filter: blur(8px);
+}
+.hud__item { font-weight: 600; }
+
+.arena {
+  position: relative;
+  display: grid;
+  grid-template-columns: 1fr minmax(220px, 320px) 1fr;
+  gap: 12px;
+  align-items: center;
+
+  background:
+    linear-gradient(
+      rgba(0,0,0,.25),
+      rgba(0,0,0,.35)
+    ),
+    url("./image/backgraund.png") center bottom / cover no-repeat;
+
+  border-radius: 18px;
+  padding: 16px;
+  box-shadow: 0 12px 35px rgba(0,0,0,.25);
+  min-height: 320px;
+}
+
+
+.center { text-align: center; }
+.prompt {
+  font-size: 38px;
+  font-weight: 900;
+  letter-spacing: 1px;
+  text-shadow: 0 6px 18px rgba(0,0,0,.35);
+}
+.sub { opacity: .9; margin-top: 6px; }
+
+.btn {
+  margin-top: 14px;
+  padding: 12px 16px;
+  border: 0;
+  border-radius: 14px;
+  background: var(--btn);
+  color: var(--btnText);
+  font-weight: 800;
+  cursor: pointer;
+}
+.btn:active { transform: translateY(1px); }
+.btn--ghost { background: rgba(255,255,255,.2); }
+
+.tip { opacity: .85; text-align: center; }
+
+.hidden { display: none !important; }
+
+/* Simple states */
+
+.fighter--dead { filter: grayscale(1) brightness(.75); }
+
+/* Mobile layout */
+@media (max-width: 720px) {
+  .arena { grid-template-columns: 1fr; grid-template-rows: auto auto auto; min-height: 520px; }
+  .fighter { height: 170px; }
+  .prompt { font-size: 34px; }
+}
+@keyframes pop {
+  0% { transform: scale(.92); opacity:.6; }
+  60% { transform: scale(1.06); opacity:1; }
+  100% { transform: scale(1); }
+}
+.prompt { animation: pop .22s ease; }
+.tumble{
+  position:absolute;
+  bottom:18px;
+  left:-40px;
+  font-size:26px;
+  opacity:.55;
+  animation: tumble 7s linear infinite;
+  pointer-events:none;
+}
+@keyframes tumble{
+  0%{ transform: translateX(0) rotate(0deg); }
+  100%{ transform: translateX(calc(100vw + 80px)) rotate(720deg); }
+}
+.flash{
+  position:absolute; inset:0;
+  background: rgba(255,255,255,.0);
+  pointer-events:none;
+  opacity:0;
+}
+.flash.on{
+  opacity:1;
+  animation: flash .18s ease;
+}
+@keyframes flash{
+  0%{ background: rgba(255,255,255,.0); }
+  40%{ background: rgba(255,255,255,.22); }
+  100%{ background: rgba(255,255,255,.0); }
+}
+/* ===== FINAL LAYOUT FIX (paste at very bottom) ===== */
+
+/* arena stays a 3-column grid, center is always in the middle */
+.arena{
+  position: relative;
+  display: grid;
+  grid-template-columns: 1fr minmax(220px, 320px) 1fr;
+  align-items: center;
+}
+
+/* center must be in column 2 and above characters */
+.center{
+  grid-column: 2;
+  justify-self: center;
+  align-self: center;
+  position: relative;
+  z-index: 10;
+  text-align: center;
+}
+
+/* characters are placed on the ground with absolute positioning */
+#player, #enemy{
+  position: absolute;
+  bottom: 110px;        /* ⬅️ მიწის ხაზი: 95–130 დაარეგულირე */
+  width: 360px;
+  height: 360px;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  background: transparent;
+  border: none;
+  box-shadow: none;
+  pointer-events: none;
+  z-index: 3;           /* center (10) ყოველთვის წინ იქნება */
+}
+
+/* left / right placement */
+#player{ left: 60px; }
+#enemy { right: 60px; }
+
+/* image sizing */
+.fighter__img{
+  height: 280px;        /* ⬅️ ზომა: 250–310 დაარეგულირე */
+  width: auto;
+  object-fit: contain;
+  filter: drop-shadow(0 12px 20px rgba(0,0,0,.45));
+  user-select: none;
+  pointer-events: none;
+}
+.fighter__name{
+  position: absolute;
+  bottom: 70%;                 /* ⬆️ ადის პერსონაჟის ზემოთ */
+  left: 50%;
+  transform: translateX(-50%);
+  margin-bottom: 10px;
+
+  font-weight: 800;
+  font-size: 15px;
+  letter-spacing: .5px;
+
+  padding: 6px 10px;
+  border-radius: 999px;
+  background: rgba(0,0,0,.45);
+  backdrop-filter: blur(4px);
+
+  text-shadow: 0 2px 8px rgba(0,0,0,.6);
+  white-space: nowrap;
+  pointer-events: none;
+}
+
+/* ground shadow to make them "stand" */
+#player::after, #enemy::after{
+  content:"";
+  position:absolute;
+  bottom: 8px;
+  width: 140px;
+  height: 22px;
+  background: rgba(0,0,0,.35);
+  filter: blur(10px);
+  border-radius: 50%;
+}
+/* --- Jango a bit "farther back" (perspective) --- */
+#player{
+  left: 70px;       /* უფრო შიგნით ქუჩაში (მარცხნიდან) */
+  bottom: 180px;    /* ოდნავ მაღლა = უფრო შორს */
+}
+
+#player .fighter__img{
+  height: 250px;    /* ოდნავ პატარა = უფრო შორს */
+}
+/* ===== MAIN START PAGE ===== */
+.startPage{
+  position: fixed;
+  inset: 0;
+  z-index: 999;
+  display: grid;
+  place-items: center;
+  padding: 18px;
+    position: fixed;
+}
+
+.startPage { 
+  /* ✅ დაამატე ეს: */
+  position: fixed;
+
+
+  /* აქ ჩასვი შენი მთავარი გვერდის ფონი */
+  background: url("./image/mainpage.png") center / cover no-repeat;
+}
+
+/* “მოძრაობა” */
+@keyframes signFloat{
+  0%   { transform: translateY(0) scale(1); }
+  50%  { transform: translateY(-10px) scale(1.03); }
+  100% { transform: translateY(0) scale(1); }
+}
+/* ===== START ON WOODEN SIGN ===== */
+
+.sign-hitbox{
+  position: absolute;
+
+  /* 🔴 ეს არის მთავარი ნაწილი — ისრის ზუსტი მდებარეობა */
+  right: 15%;
+  top: 28%;
+
+  width: 260px;
+  height: 120px;
+
+  background: transparent;
+  border: none;
+  cursor: pointer;
+
+  animation: signFloat 2s ease-in-out infinite;
+}
+
+/* START ტექსტი ისარზე */
+.sign-text{
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  font-size: 32px;
+  font-weight: 900;
+  letter-spacing: 3px;
+
+  color: #4a2a12;
+  text-shadow:
+    0 2px 0 rgba(255,255,255,.6),
+    0 4px 6px rgba(0,0,0,.25);
+
+  pointer-events: none;
+}
+
+/* მცირედი მოძრაობა */
+@keyframes signFloat{
+  0%   { transform: translateY(0); }
+  50%  { transform: translateY(-8px); }
+  100% { transform: translateY(0); }
+}
+/* ===== SHOOT EFFECT ===== */
+
+.muzzle-flash{
+  position: absolute;
+  width: 40px;
+  height: 40px;
+  background: radial-gradient(circle, #fff 0%, #ffd36a 30%, #ff7b00 60%, transparent 70%);
+  border-radius: 50%;
+  opacity: 0;
+  pointer-events: none;
+  filter: blur(1px);
+}
+
+/* პოზიცია იარაღთან */
+.fighter--left .muzzle-flash{
+  right: 40px;
+  top: 110px;
+}
+
+.fighter--right .muzzle-flash{
+  left: 40px;
+  top: 110px;
+}
+
+/* როცა ისვრის */
+.muzzle-flash.on{
+  animation: flashShot 0.12s ease-out;
+}
+
+@keyframes flashShot{
+  0%{ opacity: 0; transform: scale(0.5); }
+  30%{ opacity: 1; transform: scale(1.2); }
+  100%{ opacity: 0; transform: scale(1.8); }
+}
+/* tumbleweed on MAIN page */
+.startPage{
+  position: fixed;
+  inset: 0;
+  z-index: 999;
+  overflow: hidden; /* რომ ეკრანს გარეთ არ გამოჩნდეს */
+}
+
+/* tumbleweed: ground -> mountains (perspective) */
+.tumbleweed-ground {
+  position: absolute;
+  left: 50%;
+  top: 72%;                 /* მიწაზე */
+  transform: translateX(-50%);
+  width: 130px;
+  pointer-events: none;
+
+  animation: tumbleDepth 10s linear infinite;
+}
+@keyframes tumbleDepth {
+  0% {
+    transform: translateX(-50%) translateY(0) scale(1) rotate(0deg);
+    opacity: 1;
+  }
+
+  100% {
+    transform: translateX(-50%) translateY(-180px) scale(0.2) rotate(720deg);
+    opacity: 0;
+  }
+}
+.main-title {
+  position: absolute;
+  top: 5%;
+  left: 50%;
+  transform: translateX(-50%);
+  
+  font-family: 'Rye', cursive;
+  font-size: 72px;
+  letter-spacing: 4px;
+  
+  color: #4a2a12;
+  text-shadow:
+    0 3px 0 #e6c28b,
+    0 6px 15px rgba(0,0,0,0.35);
+
+  pointer-events: none;
+  user-select: none;
+}
+.tumbleweed-wrap {
+  position: absolute;
+  bottom: 80px;          /* მიწის დონე (ჩონჩხთან ახლოს) */
+  left: -120px;          /* ეკრანის გარედან იწყებს */
+  pointer-events: none;
+}
+
+.tumbleweed {
+  width: 90px;
+  animation: roll 12s linear infinite;
+  z-index: 3;
+}
+.tumbleweed-wrap {
+  position: absolute;
+  bottom: 80px;          /* მიწის დონე (ჩონჩხთან ახლოს) */
+  left: -120px;          /* ეკრანის გარედან იწყებს */
+  pointer-events: none;
+}
+
+.tumbleweed {
+  width: 90px;
+  animation: roll 12s linear infinite;
+  z-index: 3;
+}
+.tumbleweed-shadow {
+  position: absolute;
+  bottom: -8px;
+  left: 50%;
+  transform: translateX(-50%);
+  
+  width: 70px;
+  height: 16px;
+  background: rgba(0, 0, 0, 0.35);
+  filter: blur(8px);
+  border-radius: 50%;
+  
+  z-index: 2;
+}
+/* ===== FALL DOWN ANIMATION ===== */
+
+/* საერთო დაცემა */
+.fighter.fallen .fighter__img{
+  transform-origin: 50% 100%; /* ფეხებიდან ეცემა */
+  animation: fallDown 0.45s ease forwards;
+  filter: grayscale(1) brightness(.75);
+}
+
+/* მარცხენა მოთამაშე (Jango) */
+.fighter--left.fallen .fighter__img{
+  animation: fallLeft 0.45s ease forwards;
+}
+
+/* მარჯვენა ბანდიტი */
+.fighter--right.fallen .fighter__img{
+  animation: fallRight 0.45s ease forwards;
+}
+
+@keyframes fallLeft{
+  0%{
+    transform: rotate(0deg) translate(0,0);
+  }
+  100%{
+    transform: rotate(75deg) translate(40px, 30px);
+  }
+}
+
+@keyframes fallRight{
+  0%{
+    transform: rotate(0deg) translate(0,0);
+  }
+  100%{
+    transform: rotate(-75deg) translate(-40px, 30px);
+  }
+}

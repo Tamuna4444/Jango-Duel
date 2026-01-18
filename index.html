@@ -1,0 +1,63 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
+  <title>Jango Duel (Prototype)</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <main class="game" id="game">
+
+    <!-- MAIN START PAGE -->
+<section class="startPage" id="startPage" aria-label="Start page">
+    <h1 class="main-title">JANGO DUEL</h1>
+  <button class="sign-hitbox" id="startMainBtn" aria-label="Start game">
+    <span class="sign-text">START</span></button>
+
+    <div class="tumbleweed-wrap"></div>
+  <div class="tumbleweed-shadow"></div>
+  <img class="tumbleweed-ground" src="./image/tumbleweed1.png" alt="" aria-hidden="true">
+
+  
+</section>
+  <header class="hud hidden" id="hud">
+      <div class="hud__item">Lives: <span id="lives">3</span></div>
+      <div class="hud__item">Score: <span id="score">0</span></div>
+      <div class="hud__item">Best: <span id="best">0</span></div>
+    </header>
+
+<section class="arena hidden" id="arena" aria-label="Duel arena">
+
+  <div class="tumble" aria-hidden="true">🌵</div>
+  <div class="flash" id="flash" aria-hidden="true"></div>
+
+  <div class="fighter fighter--left" id="player">
+    <img class="fighter__img" src="./image/jango.png" alt="Jango">
+     <div class="muzzle-flash"></div>
+    <div class="fighter__name">Jango</div>
+  </div>
+
+<div class="center">
+  <div class="prompt" id="prompt">GAME OVER</div>
+  <div class="sub" id="sub">Watch an ad to continue</div>
+
+ <button class="btn hidden" id="adBtn">Restart Watch Ad</button>
+</div>
+
+  <div class="fighter fighter--right" id="enemy">
+  <img class="fighter__img" src="./image/bandit.png" alt="Bandit">
+   <div class="muzzle-flash"></div>
+    <div class="fighter__name">Bandit</div>
+  </div>
+
+</section>
+
+    <footer class="tip">
+      Controls: click/tap anywhere during a duel.
+    </footer>
+  </main>
+
+  <script src="script.js"></script>
+</body>
+</html>
