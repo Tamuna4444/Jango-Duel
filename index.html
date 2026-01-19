@@ -9,11 +9,23 @@
 <body>
   <main class="game" id="game">
 
+    
+
     <!-- MAIN START PAGE -->
 <section class="startPage" id="startPage" aria-label="Start page">
     <h1 class="main-title">JANGO DUEL</h1>
-  <button class="sign-hitbox" id="startMainBtn" aria-label="Start game">
-    <span class="sign-text">START</span></button>
+<div class="start-sign-wrapper">
+
+ <button class="sign-hitbox" id="startMainBtn" aria-label="Start game">
+  <span class="sign-text">START</span>
+</button>
+
+  <!-- 🐦 BIRD (separate container) -->
+  <div class="menu-bird-container">
+    <img src="./image/vulture.png" alt="Bird" class="menu-bird">
+  </div>
+
+</div>
 
     <div class="tumbleweed-wrap"></div>
   <div class="tumbleweed-shadow"></div>
@@ -39,10 +51,15 @@
   </div>
 
 <div class="center">
+ <div id="waitClock" class="clock hidden">
+    <div class="hand"></div>
+  </div>
+
   <div class="prompt" id="prompt">GAME OVER</div>
   <div class="sub" id="sub">Watch an ad to continue</div>
 
  <button class="btn hidden" id="adBtn">Restart Watch Ad</button>
+ <button class="btn btn--ghost hidden" id="restartBtn">Restart</button>
 </div>
 
   <div class="fighter fighter--right" id="enemy">
@@ -54,7 +71,7 @@
 </section>
 
     <footer class="tip">
-      Controls: click/tap anywhere during a duel.
+      click/tap anywhere during a duel.
     </footer>
   </main>
 

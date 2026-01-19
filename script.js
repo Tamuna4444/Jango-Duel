@@ -3,7 +3,7 @@ const el = {
   game: document.getElementById("game"),
   prompt: document.getElementById("prompt"),
   sub: document.getElementById("sub"),
- 
+ waitClock: document.getElementById("waitClock"),
  adBtn: document.getElementById("adBtn"),
   lives: document.getElementById("lives"),
   score: document.getElementById("score"),
@@ -15,6 +15,7 @@ const el = {
   startMainBtn: document.getElementById("startMainBtn"),
   hud: document.getElementById("hud"),
   arena: document.getElementById("arena"),
+  restartBtn: document.getElementById("restartBtn"),
 };
 
 const state = {
@@ -27,7 +28,23 @@ const state = {
   minDelay: 900,   // will get harder
   maxDelay: 2200,
   enemyReactionBase: 420, // ms (lower = harder)
+  wins: 0,
+  enemyStage: 0,
 };
+const enemies = [
+  {
+    name: "Bandit",
+    img: "./image/bandit.png",
+  },
+  {
+    name: "Outlaw",
+    img: "./image/outlaw.png",
+  },
+  {
+    name: "Sheriff",
+    img: "./image/sheriff.png",
+  }
+];
 
 function clamp(n, a, b) { return Math.max(a, Math.min(b, n)); }
 function randInt(a, b) { return Math.floor(a + Math.random() * (b - a + 1)); }
@@ -41,6 +58,14 @@ function renderHUD() {
 function setPrompt(main, sub = "") {
   if (el.prompt) el.prompt.textContent = main;
   if (el.sub) el.sub.textContent = sub;
+}
+function showClock() {
+  if (el.waitClock) el.waitClock.classList.remove("hidden");
+  if (el.prompt) el.prompt.textContent = ""; // WAIT ტექსტი აღარ გვინდა
+}
+
+function hideClock() {
+  if (el.waitClock) el.waitClock.classList.add("hidden");
 }
 
 function resetFighters() {
@@ -60,7 +85,8 @@ function startRound() {
   const maxD = clamp(state.maxDelay - level * 60, 900, 2400);
   const waitMs = randInt(minD, maxD);
 
-  setPrompt("WAIT…", "Don’t shoot early.");
+  setPrompt("", "Don’t shoot early.");
+showClock();
 
   
 
@@ -70,6 +96,7 @@ function startRound() {
   state.fireTimeoutId = setTimeout(() => {
     state.phase = "fire";
     state.fireAt = performance.now();
+    hideClock();
     setPrompt("FIRE!", "Tap/click NOW!");
     el.flash.classList.add("on");
 setTimeout(() => el.flash.classList.remove("on"), 220);
@@ -102,7 +129,21 @@ el.enemy.classList.add("fighter--hit", "fighter--dead", "fallen");
     state.best = state.score;
     localStorage.setItem("jango_best", String(state.best));
   }
+  // ✅ win counter
+  state.wins += 1;
 
+  // ✅ every 3 wins -> +3 lives
+  if (state.wins % 3 === 0) {
+    state.lives += 3;
+  }
+  // ✅ ყოველ 3 გამარჯვებაზე — ახალი მოწინააღმდეგე
+  if (state.wins % 3 === 0) {
+    state.enemyStage = Math.min(
+      state.enemyStage + 1,
+      enemies.length - 1
+    );
+    updateEnemy();
+  }
   renderHUD();
   setPrompt("WIN!", `Reaction: ${Math.round(reactionMs)} ms  (+${points})`);
 
@@ -110,7 +151,11 @@ el.enemy.classList.add("fighter--hit", "fighter--dead", "fallen");
   setTimeout(() => startRound(), 900);
 }
 
+ 
+
 function loseLife(reason) {
+  if (state.phase === "result" || state.phase === "gameover") return; // ✅ guard
+
   state.phase = "result";
   state.lives -= 1;
   renderHUD();
@@ -121,16 +166,20 @@ function loseLife(reason) {
   }
 
   setPrompt("MISS!", `${reason}  Lives left: ${state.lives}`);
-  // next round
+
+  // ✅ ძალიან მნიშვნელოვანია — ძველი timeout-ის გაწმენდა
+  clearTimeout(state.fireTimeoutId);
+
   setTimeout(() => startRound(), 1000);
 }
 
 function gameOver(reason) {
   state.phase = "gameover";
- el.player.classList.add("fighter--dead", "fallen");
+  el.player.classList.add("fighter--dead", "fallen");
   setPrompt("GAME OVER", reason);
+
   if (el.adBtn) el.adBtn.classList.remove("hidden");
-  
+  if (el.restartBtn) el.restartBtn.classList.remove("hidden");
 }
 
 function onShootAttempt() {
@@ -138,12 +187,12 @@ function onShootAttempt() {
   // Still allow click anywhere else
   if (state.phase === "idle") return;
 
-  if (state.phase === "waiting") {
-    // false start
-    el.player.classList.add("fighter--hit");
-    loseLife("False start — you shot too early.");
-    return;
-  }
+if (state.phase === "waiting") {
+  clearTimeout(state.fireTimeoutId); // ✅
+  el.player.classList.add("fighter--hit");
+  loseLife("False start — you shot too early.");
+  return;
+}
 
 if (state.phase === "fire") {
   playShotEffect(el.player);         // ✅ muzzle flash on Jango
@@ -160,13 +209,17 @@ function restartGame() {
   clearTimeout(state.fireTimeoutId);
   state.lives = 3;
   state.score = 0;
+   state.wins = 0;
+   state.enemyStage = 0;
   state.phase = "idle";
   resetFighters();
   renderHUD();
   setPrompt("Press Start", "Tap/click when you see “FIRE!”");
 
- if (el.adBtn) el.adBtn.classList.add("hidden");
- setPrompt("WAIT…", "Don’t shoot early.");
+  if (el.adBtn) el.adBtn.classList.add("hidden");
+  if (el.restartBtn) el.restartBtn.classList.add("hidden");
+
+  setPrompt("WAIT…", "Don’t shoot early.");
 }
 
 
@@ -199,7 +252,14 @@ if (el.adBtn) {
     startRound();
   });
 }
+if (el.restartBtn) {
+  el.restartBtn.addEventListener("click", (e) => {
+    e.stopPropagation();
 
+    restartGame();
+    startRound();
+  });
+}
 
 if (el.startMainBtn) {
   el.startMainBtn.addEventListener("click", openGameFromMainPage);
@@ -219,4 +279,14 @@ function playShotEffect(fighterEl){
     el.flash.offsetHeight;
     el.flash.classList.add("on");
   }
+}
+function updateEnemy() {
+  const enemy = enemies[state.enemyStage];
+  if (!enemy) return;
+
+  const img = el.enemy.querySelector(".fighter__img");
+  const name = el.enemy.querySelector(".fighter__name");
+
+  if (img) img.src = enemy.img;
+  if (name) name.textContent = enemy.name;
 }

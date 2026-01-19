@@ -252,7 +252,7 @@ body {
   border: none;
   cursor: pointer;
 
-  animation: signFloat 2s ease-in-out infinite;
+  
 }
 
 /* START ტექსტი ისარზე */
@@ -262,6 +262,8 @@ body {
   display: flex;
   align-items: center;
   justify-content: center;
+  
+  
 
   font-size: 32px;
   font-weight: 900;
@@ -297,12 +299,12 @@ body {
 /* პოზიცია იარაღთან */
 .fighter--left .muzzle-flash{
   right: 40px;
-  top: 110px;
+  top: 200px;
 }
 
 .fighter--right .muzzle-flash{
   left: 40px;
-  top: 110px;
+  top: 150px;
 }
 
 /* როცა ისვრის */
@@ -437,3 +439,104 @@ body {
     transform: rotate(-75deg) translate(-40px, 30px);
   }
 }
+.clock {
+  width: 80px;
+  height: 80px;
+  border: 4px solid #4b2e1e;
+  border-radius: 50%;
+  position: relative;
+  margin: 20px auto;
+  background: #f3e2c7;
+}
+
+.clock::after {
+  content: "";
+  width: 8px;
+  height: 8px;
+  background: #4b2e1e;
+  border-radius: 50%;
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+}
+
+.hand {
+  width: 3px;
+  height: 32px;
+  background: #4b2e1e;
+  position: absolute;
+  top: 8px;
+  left: 50%;
+  transform-origin: bottom center;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  from {
+    transform: translateX(-50%) rotate(0deg);
+  }
+  to {
+    transform: translateX(-50%) rotate(360deg);
+  }
+}
+
+.hidden {
+  display: none;
+}
+/* ===== START SIGN + BIRD WRAPPER ===== */
+.start-sign-wrapper{
+  position: absolute;
+
+  /* ეს ემთხვევა შენს sign-hitbox პოზიციას */
+  right: 15%;
+  top: 28%;
+
+  width: 260px;
+  height: 140px;
+}
+
+/* existing sign stays clickable */
+.sign-hitbox{
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+}
+
+/* ===== BIRD ===== */
+.menu-bird-container{
+  position: absolute;
+
+  /* ⬇️ აქ აკონტროლებ სად "ზის" ისარზე */
+  top: -150px;
+  left: 70%;
+  transform: translateX(-50%);
+
+  z-index: 3;
+  pointer-events: none; /* ❗️არ უშლის ხელს START კლიკს */
+}
+
+.menu-bird{
+  width: 150px;
+  animation: birdFloat 2.2s ease-in-out infinite;
+  user-select: none;
+}
+
+/* ნაზი მოძრაობა */
+@keyframes birdFloat{
+  0%   { transform: translateY(0); }
+  50%  { transform: translateY(-10px); }
+  100% { transform: translateY(0); }
+}
+@keyframes birdLook{
+  0%   { transform: rotate(0deg); }
+  30%  { transform: rotate(-6deg); }
+  60%  { transform: rotate(6deg); }
+  100% { transform: rotate(0deg); }
+}
+
+.menu-bird{
+  animation: birdLook 3.5s ease-in-out infinite;
+  transform-origin: bottom center;
+}
+
